@@ -29,14 +29,23 @@ $apiHeaders = @{
     Accept        = "application/vnd.github+json"
 }
 
-# --- Ensure repo exists on GitHub ---
+# --- Ensure repo exists on GitHub (404 = create; 200 = ok; network = skip create) ---
 $repoExists = $false
 try {
-    $null = Invoke-RestMethod -Uri "https://api.github.com/repos/$GitHubUser/$RepoName" -Headers $apiHeaders -Method Get
+    $null = Invoke-RestMethod -Uri "https://api.github.com/repos/$GitHubUser/$RepoName" -Headers $apiHeaders -Method Get -ErrorAction Stop
     $repoExists = $true
     Write-Host "Remote repo $GitHubUser/$RepoName found."
 } catch {
-    $repoExists = $false
+    $code = $null
+    if ($_.Exception.Response) {
+        $code = [int]$_.Exception.Response.StatusCode
+    }
+    if ($code -eq 404) {
+        $repoExists = $false
+    } else {
+        Write-Warning "Could not verify repo via API (HTTP $code). Assuming it already exists; skipping create."
+        $repoExists = $true
+    }
 }
 
 if (-not $repoExists) {
@@ -46,13 +55,32 @@ if (-not $repoExists) {
         private     = $false
         description = "PyQt6 desktop browser (Secret Browser)"
     } | ConvertTo-Json
-    Invoke-RestMethod -Uri "https://api.github.com/user/repos" -Headers $apiHeaders -Method Post -Body $body -ContentType "application/json"
-    Write-Host "Repository created: https://github.com/$GitHubUser/$RepoName"
+    try {
+        Invoke-RestMethod -Uri "https://api.github.com/user/repos" -Headers $apiHeaders -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
+        Write-Host "Repository created: https://github.com/$GitHubUser/$RepoName"
+    } catch {
+        $err = $_.ErrorDetails.Message
+        if ($err -match "name already exists") {
+            Write-Host "Repository already exists on GitHub."
+        } else {
+            throw
+        }
+    }
 }
 
 # --- Git: init, remote, commit, push ---
 if (-not (Test-Path -LiteralPath ".git")) {
     git init
+}
+
+# Local commit identity (only if unset - avoids "Please tell me who you are")
+$gn = (& git config user.name 2>$null)
+if ([string]::IsNullOrWhiteSpace($gn)) {
+    git config user.name $GitHubUser
+}
+$ge = (& git config user.email 2>$null)
+if ([string]::IsNullOrWhiteSpace($ge)) {
+    git config user.email "$GitHubUser@users.noreply.github.com"
 }
 
 $remoteUrl = "https://github.com/$GitHubUser/$RepoName.git"
@@ -90,6 +118,7 @@ if ($hasHead) {
 $pushUrl = "https://x-access-token:$token@github.com/$GitHubUser/$RepoName.git"
 git push $pushUrl refs/heads/main:refs/heads/main
 if ($LASTEXITCODE -eq 0) {
+    git fetch origin 2>$null
     git branch --set-upstream-to=origin/main main 2>$null
     Write-Host "Done. https://github.com/$GitHubUser/$RepoName"
 } else {
