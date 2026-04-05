@@ -118,7 +118,7 @@ if ($hasHead) {
 $pushUrl = "https://x-access-token:$token@github.com/$GitHubUser/$RepoName.git"
 git push $pushUrl refs/heads/main:refs/heads/main
 if ($LASTEXITCODE -eq 0) {
-    git fetch origin 2>$null
+    git fetch --quiet origin 2>$null
     git branch --set-upstream-to=origin/main main 2>$null
     Write-Host "Done. https://github.com/$GitHubUser/$RepoName"
 } else {
