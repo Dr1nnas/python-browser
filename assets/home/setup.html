@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome — Secret Browser</title>
+  <link rel="stylesheet" href="setup.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <header>
+      <h1>Welcome to Secret Browser</h1>
+      <p class="sub">Choose how search, privacy, and data cleanup should work. You can change these later in <strong>Menu → Options</strong>.</p>
+    </header>
+
+    <h2 class="section-title">Default search</h2>
+    <nav class="grid" aria-label="Search engines">
+      <button type="button" class="card" data-engine="google" aria-pressed="false">
+        <div class="card-icon-wrap" aria-hidden="true">
+          <img class="card-icon" src="https://www.google.com/favicon.ico" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.remove()" />
+        </div>
+        <div class="name">Google</div>
+      </button>
+      <button type="button" class="card" data-engine="duckduckgo" aria-pressed="false">
+        <div class="card-icon-wrap" aria-hidden="true">
+          <img class="card-icon" src="https://duckduckgo.com/favicon.ico" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.remove()" />
+        </div>
+        <div class="name">DuckDuckGo</div>
+      </button>
+      <button type="button" class="card" data-engine="bing" aria-pressed="false">
+        <div class="card-icon-wrap" aria-hidden="true">
+          <img class="card-icon" src="https://www.bing.com/favicon.ico" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.remove()" />
+        </div>
+        <div class="name">Bing</div>
+      </button>
+      <button type="button" class="card" data-engine="brave" aria-pressed="false">
+        <div class="card-icon-wrap" aria-hidden="true">
+          <img class="card-icon" src="https://search.brave.com/favicon.ico" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.remove()" />
+        </div>
+        <div class="name">Brave</div>
+      </button>
+      <button type="button" class="card" data-engine="ecosia" aria-pressed="false">
+        <div class="card-icon-wrap" aria-hidden="true">
+          <img class="card-icon" src="https://www.ecosia.org/favicon.ico" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.remove()" />
+        </div>
+        <div class="name">Ecosia</div>
+      </button>
+    </nav>
+
+    <h2 class="section-title">Data on this device</h2>
+    <div class="privacy-grid" role="group" aria-label="Cleanup on exit">
+      <button type="button" class="privacy-card" id="privacy-normal" aria-pressed="true">
+        <div class="privacy-name">Normal</div>
+        <p class="privacy-desc">Keep cookies and site data between sessions. Bookmarks stay saved.</p>
+      </button>
+      <button type="button" class="privacy-card" id="privacy-cleanse" aria-pressed="false">
+        <div class="privacy-name">No trace</div>
+        <p class="privacy-desc">On exit, remove cookies, cache, storage, and bookmarks from this profile so nothing is left locally.</p>
+      </button>
+    </div>
+
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="block3p" checked />
+        <span>Block third-party cookies (recommended)</span>
+      </label>
+    </div>
+
+    <div class="start-wrap">
+      <button type="button" class="start-btn" id="startBtn">Start Secret Browser</button>
+    </div>
+
+    <p class="hint">You can run <strong>Clear browsing data</strong> anytime from the menu.</p>
+  </div>
+  <script>
+    (function () {
+      var engine = "google";
+      var privacy = "normal";
+
+      function selectEngine(id) {
+        engine = id;
+        document.querySelectorAll(".grid .card").forEach(function (c) {
+          var on = c.getAttribute("data-engine") === id;
+          c.classList.toggle("selected", on);
+          c.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+
+      function selectPrivacy(mode) {
+        privacy = mode;
+        var n = document.getElementById("privacy-normal");
+        var cl = document.getElementById("privacy-cleanse");
+        if (n && cl) {
+          n.classList.toggle("selected", mode === "normal");
+          n.setAttribute("aria-pressed", mode === "normal" ? "true" : "false");
+          cl.classList.toggle("selected", mode === "cleanse");
+          cl.setAttribute("aria-pressed", mode === "cleanse" ? "true" : "false");
+        }
+      }
+
+      document.querySelectorAll(".grid .card").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          selectEngine(btn.getAttribute("data-engine"));
+        });
+      });
+
+      var pn = document.getElementById("privacy-normal");
+      var pc = document.getElementById("privacy-cleanse");
+      if (pn) pn.addEventListener("click", function () { selectPrivacy("normal"); });
+      if (pc) pc.addEventListener("click", function () { selectPrivacy("cleanse"); });
+
+      selectEngine("google");
+      selectPrivacy("normal");
+
+      document.getElementById("startBtn").addEventListener("click", function () {
+        var b3 = document.getElementById("block3p");
+        var block3p = b3 && b3.checked ? "1" : "0";
+        var url =
+          "setup.html?finish=1" +
+          "&engine=" + encodeURIComponent(engine) +
+          "&privacy=" + encodeURIComponent(privacy) +
+          "&block3p=" + block3p;
+        window.location.href = url;
+      });
+    })();
+  </script>
+</body>
+</html>

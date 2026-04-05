@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home</title>
+  <link rel="stylesheet" href="newtab.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <main>
+    <p class="brand">Secret Browser</p>
+    <p class="clock" id="clock">00:00</p>
+    <p class="date" id="date"></p>
+    <div class="search-wrap">
+      <form id="search-form" role="search" autocomplete="off">
+        <input
+          type="search"
+          id="q"
+          name="q"
+          placeholder="Search the web…"
+          enterkeyhint="search"
+          aria-label="Search query"
+        />
+        <button type="submit">Search</button>
+      </form>
+    </div>
+    <p class="footer" id="engine-label"></p>
+  </main>
+  <script>
+    /* Injected by Python: __SEARCH_TEMPLATE__ */
+    (function () {
+      var TEMPLATE = __SEARCH_TEMPLATE__;
+      var engineName = __ENGINE_NAME__;
+
+      function tick() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var pad = function (n) {
+          return (n < 10 ? "0" : "") + n;
+        };
+        document.getElementById("clock").textContent = pad(h) + ":" + pad(m);
+        var opts = { weekday: "long", month: "long", day: "numeric" };
+        document.getElementById("date").textContent = now.toLocaleDateString(undefined, opts);
+      }
+      tick();
+      setInterval(tick, 1000);
+
+      document.getElementById("engine-label").textContent =
+        "Search with " + engineName;
+
+      document.getElementById("search-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var q = document.getElementById("q").value.trim();
+        if (!q) {
+          document.getElementById("q").focus();
+          return;
+        }
+        var url = TEMPLATE.replace(/\{q\}/g, encodeURIComponent(q));
+        window.location.href = url;
+      });
+    })();
+  </script>
+</body>
+</html>

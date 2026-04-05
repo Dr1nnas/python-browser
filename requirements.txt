@@ -1,0 +1,4 @@
+# Pin matching PyQt6 + WebEngine so Qt DLLs stay in sync (avoid ImportError on Windows).
+# Toolbar icons use SVG via PyQt6.QtSvg (ships with PyQt6-Qt6 on Windows).
+PyQt6==6.11.0
+PyQt6-WebEngine==6.11.0
